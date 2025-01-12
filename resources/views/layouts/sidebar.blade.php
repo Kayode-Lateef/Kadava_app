@@ -79,7 +79,7 @@
                 <li>
                     <a href="">
                         <i data-feather="credit-card"></i>
-                        <span data-key="t-payments">Payments</span>
+                        <span data-key="t-payments">Payment</span>
                     </a>
                 </li>
 
