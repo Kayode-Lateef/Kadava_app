@@ -24,6 +24,13 @@ class User extends Authenticatable
         'avatar',
         'role',
         'google_id',
+        'status',
+        'phone',
+        'country',
+        'state',
+        'city',
+        'zip',
+        'address',
     ];
 
     /**
@@ -54,6 +61,11 @@ class User extends Authenticatable
     public function subscription()
     {
         return $this->hasOne(Subscription::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
     }
 
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Subscription;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -35,17 +36,80 @@ class AdminController extends Controller
         return abort(404);
     }
 
+
     public function dashboard()
     {
-        $user = auth()->user();
+        $admin = Auth::user();
 
-        return view('index', compact('user'));
+        return view('index', compact('admin'));
     }
 
 
-    public function profile()
+      /**
+     * Show admin profile.
+     */
+    public function showProfile()
     {
-        return view('profile');
+        $admin = Auth::user(); // Get the authenticated admin
+        return view('profile', compact('admin'));
+    }
+
+    /**
+     * Update admin profile.
+     */
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . Auth::id(),
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'phone' => 'nullable|string|max:15',
+            'city' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'zip' => 'nullable|string|max:10',
+            'country' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+        ]);
+
+        $admin = Auth::user();
+        $admin->fill($request->except('avatar'));
+
+        if ($request->hasFile('avatar')) {
+            $avatar = $request->file('avatar');
+            $avatarName = time() . '.' . $avatar->getClientOriginalExtension();
+            $avatarPath = public_path('/images/');
+            $avatar->move($avatarPath, $avatarName);
+
+            $admin->avatar = '/images/' . $avatarName;
+        }
+
+        $admin->save();
+
+        return redirect()->back()->with('success', 'Profile updated successfully!');
+    }
+
+    /**
+     * Update admin password.
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ]);
+
+        $admin = Auth::user();
+
+        // Check if current password matches
+        if (!Hash::check($request->current_password, $admin->password)) {
+            return redirect()->back()->withErrors(['current_password' => 'The current password is incorrect.']);
+        }
+
+        // Update the password
+        $admin->password = Hash::make($request->new_password);
+        $admin->save();
+
+        return redirect()->back()->with('success', 'Password updated successfully!');
     }
 
     public function userList()
@@ -55,6 +119,149 @@ class AdminController extends Controller
         $totalUsers = $users->count();
 
         return view('user-list', compact('users', 'totalUsers'));
+    }
+
+    public function addUser(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'role' => 'required|in:user,admin',
+            'password' => 'required|min:6',
+        ]);
+
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role,
+            'password' => bcrypt($request->password),
+        ]);
+
+        return redirect()->back()->with('success', 'User added successfully!');
+    }
+
+    public function updateUser(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $request->user_id,
+            'role' => 'required|in:user,admin',
+        ]);
+
+        $user = User::find($request->user_id);
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role,
+        ]);
+
+        return redirect()->back()->with('success', 'User updated successfully!');
+    }
+
+    public function createSubscription(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'plan' => 'required|string',
+        ]);
+
+        $endDate = str_contains($request->plan, 'yearly') ? now()->addYear() : now()->addMonth();
+
+        Subscription::create([
+            'user_id' => $request->user_id,
+            'plan' => $request->plan,
+            'start_date' => now(),
+            'end_date' => $endDate,
+            'status' => 'active',
+        ]);
+
+        return redirect()->back()->with('success', 'Subscription created successfully!');
+    }
+
+
+    public function updateSubscription(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'plan' => 'required|string',
+        ]);
+
+
+        $subscription = Subscription::where('user_id', $request->user_id)->firstOrFail();
+        $endDate = str_contains($request->plan, 'yearly') ? now()->addYear() : now()->addMonth();
+
+        $subscription->update([
+            'plan' => $request->plan,
+            'start_date' => now(),
+            'end_date' => $endDate,
+        ]);
+
+        return redirect()->back()->with('success', 'Subscription updated successfully!');
+    }
+
+
+    public function cancelSubscription($id)
+    {
+        $subscription = Subscription::findOrFail($id);
+        $subscription->update(['status' => 'inactive']);
+
+        return redirect()->back()->with('success', 'Subscription canceled successfully!');
+    }
+
+
+    public function banUser($id)
+    {
+        $user = User::findOrFail($id);
+        $user->update(['status' => 'banned']);
+
+        return redirect()->back()->with('success', 'User has been banned successfully!');
+    }
+
+
+    public function removeUser($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Optionally delete related data (e.g., subscriptions, invoices, etc.)
+        $user->subscription()->delete(); // Assuming `subscription()` relationship exists in the User model
+        $user->delete();
+
+        return redirect()->back()->with('success', 'User has been removed successfully!');
+    }
+
+
+    public function unbanUser($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Check if the user is currently banned
+        if ($user->status !== 'banned') {
+            return redirect()->back()->withErrors('This user is not banned.');
+        }
+
+        // Update the user's status to active
+        $user->update(['status' => 'active']);
+
+        return redirect()->back()->with('success', 'User has been unbanned successfully!');
+    }
+
+
+
+
+    public function toggleSubscription(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $subscription = Subscription::findOrFail($id);
+
+        // Update the subscription status
+        $subscription->update(['status' => $request->status]);
+
+
+        return redirect()->back()->with('success', 'Subscription status updated successfully.');
     }
 
 
@@ -71,75 +278,4 @@ class AdminController extends Controller
         }
     }
 
-    public function updateProfile(Request $request, $id)
-    {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:1024'],
-        ]);
-
-        $user = User::find($id);
-        $user->name = $request->get('name');
-        $user->email = $request->get('email');
-
-        if ($request->file('avatar')) {
-            $avatar = $request->file('avatar');
-            $avatarName = time() . '.' . $avatar->getClientOriginalExtension();
-            $avatarPath = public_path('/images/');
-            $avatar->move($avatarPath, $avatarName);
-            $user->avatar =  $avatarName;
-        }
-
-        $user->update();
-        if ($user) {
-            Session::flash('message', 'User Details Updated successfully!');
-            Session::flash('alert-class', 'alert-success');
-            return response()->json([
-                'isSuccess' => true,
-                'Message' => "User Details Updated successfully!"
-            ], 200); // Status code here
-        } else {
-            Session::flash('message', 'Something went wrong!');
-            Session::flash('alert-class', 'alert-danger');
-            return response()->json([
-                'isSuccess' => true,
-                'Message' => "Something went wrong!"
-            ], 200); // Status code here
-        }
-    }
-
-    public function updatePassword(Request $request, $id)
-    {
-        $request->validate([
-            'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-        ]);
-
-        if (!(Hash::check($request->get('current_password'), Auth::user()->password))) {
-            return response()->json([
-                'isSuccess' => false,
-                'Message' => "Your Current password does not matches with the password you provided. Please try again."
-            ], 200); // Status code
-        } else {
-            $user = User::find($id);
-            $user->password = Hash::make($request->get('password'));
-            $user->update();
-            if ($user) {
-                Session::flash('message', 'Password updated successfully!');
-                Session::flash('alert-class', 'alert-success');
-                return response()->json([
-                    'isSuccess' => true,
-                    'Message' => "Password updated successfully!"
-                ], 200); // Status code here
-            } else {
-                Session::flash('message', 'Something went wrong!');
-                Session::flash('alert-class', 'alert-danger');
-                return response()->json([
-                    'isSuccess' => true,
-                    'Message' => "Something went wrong!"
-                ], 200); // Status code here
-            }
-        }
-    }
 }

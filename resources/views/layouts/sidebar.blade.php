@@ -45,6 +45,28 @@
                         <span data-key="t-pinterest">Pinterest</span>
                     </a>
                 </li>
+
+                <li>
+                    <a href="{{ route('facebook') }}">
+                        <i data-feather="instagram"></i>
+                        <span data-key="t-instagram">Instagram</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('facebook') }}">
+                        <i data-feather="youtube"></i>
+                        <span data-key="t-youtube">Youtube</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('facebook') }}">
+                        <i class=" fab fa-google"></i>
+                        <span data-key="t-facebook">Google</span>
+                    </a>
+                </li>
+
 <!--
                 <li>
                     <a href="apps-chat">
@@ -79,7 +101,7 @@
                 <li>
                     <a href="">
                         <i data-feather="credit-card"></i>
-                        <span data-key="t-payments">Payment</span>
+                        <span data-key="t-payments">Subscription List</span>
                     </a>
                 </li>
 

@@ -212,6 +212,7 @@ return [
   "Network" => "Network",
   "Category" => "Category",
   "Account" => "Account",
+  "Payments" => "Payments",
 
 
   "Pinterest" => "Pinterest",

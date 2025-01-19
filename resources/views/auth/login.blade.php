@@ -18,26 +18,37 @@
                             </div>
                             <div class="auth-content my-auto">
                                 <div class="text-center">
+                                    @if(session('success'))
+                                    <div class="alert alert-success">{{ session('success') }}</div>
+                                    @endif
+
+                                    @if($errors->any())
+                                        <div class="alert alert-danger">
+                                            @foreach ($errors->all() as $error)
+                                                <p>{{ $error }}</p>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                     <h5 class="mb-0">Welcome Back !</h5>
                                     <p class="text-muted mt-2">Sign in to continue to Kadava.</p>
                                 </div>
                                 <form class="mt-4 pt-2" action="{{ route('login') }}" method="POST">
                                     @csrf
                                     <div class="form-floating form-floating-custom mb-4">
-                                        <input type="text" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', 'admin@kadava.co') }}" id="input-username" placeholder="Enter User Name" name="email">
+                                        <input type="text" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', 'admin@kadava.co') }}" id="input-username" placeholder="Enter Email" name="email">
                                         @error('email')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
                                             </span>
                                         @enderror
-                                        <label for="input-username">Username</label>
+                                        <label for="input-username">Email</label>
                                         <div class="form-floating-icon">
-                                        <i data-feather="users"></i>
+                                        <i data-feather="mail"></i>
                                         </div>
                                     </div>
 
                                     <div class="form-floating form-floating-custom mb-4 auth-pass-inputgroup">
-                                        <input type="password" class="form-control pe-5 @error('password') is-invalid @enderror" name="password" id="password-input" placeholder="Enter Password" value="123456">
+                                        <input type="password" class="form-control pe-5 @error('password') is-invalid @enderror" name="password" id="password-input" placeholder="Enter Password" value="">
                                         @error('password')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>

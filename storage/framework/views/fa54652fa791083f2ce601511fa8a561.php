@@ -17,6 +17,17 @@
                             </div>
                             <div class="auth-content my-auto">
                                 <div class="text-center">
+                                    <?php if(session('success')): ?>
+                                    <div class="alert alert-success"><?php echo e(session('success')); ?></div>
+                                    <?php endif; ?>
+
+                                    <?php if($errors->any()): ?>
+                                        <div class="alert alert-danger">
+                                            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <p><?php echo e($error); ?></p>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </div>
+                                    <?php endif; ?>
                                     <h5 class="mb-0">Welcome Back !</h5>
                                     <p class="text-muted mt-2">Sign in to continue to Kadava.</p>
                                 </div>
@@ -30,7 +41,7 @@ if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('email', 'admin@kadava.co')); ?>" id="input-username" placeholder="Enter User Name" name="email">
+unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('email', 'admin@kadava.co')); ?>" id="input-username" placeholder="Enter Email" name="email">
                                         <?php $__errorArgs = ['email'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -43,9 +54,9 @@ $message = $__bag->first($__errorArgs[0]); ?>
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
-                                        <label for="input-username">Username</label>
+                                        <label for="input-username">Email</label>
                                         <div class="form-floating-icon">
-                                        <i data-feather="users"></i>
+                                        <i data-feather="mail"></i>
                                         </div>
                                     </div>
 
@@ -57,7 +68,7 @@ if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" name="password" id="password-input" placeholder="Enter Password" value="123456">
+unset($__errorArgs, $__bag); ?>" name="password" id="password-input" placeholder="Enter Password" value="">
                                         <?php $__errorArgs = ['password'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :

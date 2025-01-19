@@ -173,6 +173,8 @@
                 <div class="row mt-5"  id="ads-container">
 
 
+                @include('partials.pinterest_ads')
+
 
                 </div>
                 <!-- end row -->

@@ -172,6 +172,8 @@
                 <div class="row mt-5"  id="ads-container">
 
 
+                <?php echo $__env->make('partials.pinterest_ads', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
 
                 </div>
                 <!-- end row -->

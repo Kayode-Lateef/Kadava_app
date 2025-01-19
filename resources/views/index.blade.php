@@ -9,7 +9,7 @@
 
 @component('components.breadcrumb')
 @slot('li_1') Dashboard @endslot
-@slot('title') Welcome {{ $user->name }}! @endslot
+@slot('title') Welcome {{ $admin->name }}! @endslot
 @endcomponent
 
 <div class="row">

@@ -22,7 +22,7 @@
 
                 <li>
                     <a href="{{ route('user.facebook') }}">
-                        <i class="fab fa-facebook"></i>
+                        <i data-feather="facebook"></i>
                         <span data-key="t-facebook">Facebook</span>
                     </a>
                 </li>
@@ -41,6 +41,27 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="{{ route('user.facebook') }}">
+                        <i data-feather="instagram"></i>
+                        <span data-key="t-instagram">Instagram</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('user.facebook') }}">
+                        <i data-feather="youtube"></i>
+                        <span data-key="t-youtube">Youtube</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('user.facebook') }}">
+                        <i class=" fab fa-google"></i>
+                        <span data-key="t-facebook">Google</span>
+                    </a>
+                </li>
+
 
 
                 <li class="menu-title" data-key="t-account">@lang('translation.Account')</li>
@@ -51,9 +72,9 @@
                     </a>
                 </li>
                 <li>
-                    <a href="">
+                    <a href="{{ route('user.payment') }}">
                         <i data-feather="credit-card"></i>
-                        <span data-key="t-payments">Payments</span>
+                        <span data-key="t-payments">Payments and Invoices</span>
                     </a>
                 </li>
 <!--

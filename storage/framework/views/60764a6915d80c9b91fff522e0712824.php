@@ -8,7 +8,7 @@
 
 <?php $__env->startComponent('components.breadcrumb'); ?>
 <?php $__env->slot('li_1'); ?> Dashboard <?php $__env->endSlot(); ?>
-<?php $__env->slot('title'); ?> Welcome <?php echo e($user->name); ?>! <?php $__env->endSlot(); ?>
+<?php $__env->slot('title'); ?> Welcome <?php echo e($admin->name); ?>! <?php $__env->endSlot(); ?>
 <?php echo $__env->renderComponent(); ?>
 
 <div class="row">

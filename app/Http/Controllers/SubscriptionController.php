@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Invoice;
 use Carbon\Carbon;
 use App\Models\Subscription;
 use Unicodeveloper\Paystack\Facades\Paystack;
@@ -92,7 +93,7 @@ class SubscriptionController extends Controller
     {
         $paymentDetails = Paystack::getPaymentData();
 
-        // Check if payment was successful and data is in expected format
+        // Check if payment was successful and data is in the expected format
         if (isset($paymentDetails['data']) && $paymentDetails['data']['status'] === 'success') {
             // Accessing user ID and plan from metadata assuming they are stored correctly
             $userId = $paymentDetails['data']['metadata']['user_id'];
@@ -105,27 +106,45 @@ class SubscriptionController extends Controller
                 $endDate = $this->calculateEndDateForPlan($plan);
 
                 // Create or update subscription
-                $subscription = Subscription::updateOrCreate(
+                Subscription::updateOrCreate(
                     ['user_id' => $user->id],
                     ['plan' => $plan, 'start_date' => now(), 'end_date' => $endDate, 'status' => 'active']
                 );
 
-                // Redirect the user with success message
-                return redirect()->route('confirmation.page')->with('success', 'Subscription successful!');
+                // Create an invoice
+                Invoice::create([
+                    'user_id' => $user->id,
+                    'plan' => $plan,
+                    'amount' => $paymentDetails['data']['amount'] / 100, // Convert from kobo
+                    'status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+
+                // Redirect the user with a success message
+                return redirect()->route('user.payment')->with('success', 'Payment and invoice generated successfully!');
             } else {
                 // Handle case where the payment amount does not match the expected amount for the plan
-                return back()->withErrors('Payment amount does not match the required amount for the selected plan.');
+                return redirect()->route('user.payment')->withErrors('Payment verification failed. Incorrect amount.');
             }
         }
 
         // Handle failure case
-        return back()->withErrors('Payment failed or was cancelled.');
+        return redirect()->route('user.payment')->withErrors('Payment failed or was cancelled.');
     }
 
     public function showConfirmationPage(){
 
         return view('user.confirmation');
 
+    }
+
+    public function downloadInvoice($id)
+    {
+        $invoice = Invoice::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+
+        $pdf = \PDF::loadView('user.invoice_pdf', compact('invoice'));
+
+        return $pdf->download("invoice-{$invoice->id}.pdf");
     }
 
 
